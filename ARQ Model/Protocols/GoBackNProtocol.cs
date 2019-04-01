@@ -45,7 +45,7 @@ namespace ARQ_Model.Protocols
             var currentByte = transferData[requestNumber];
             var transferPacket = checksumGenerator.CalculateChecksum(
                 new BitArray(new[] { currentByte }));
-            fileWriter.WriteLine($"Packet #{requestNumber} sent: " + transferPacket.ToDigitString());
+            fileWriter.WriteLine($"Packet #{requestNumber} sent: {transferPacket.ToDigitString()}");
             transferPacket = noiseGenerator.GenerateNoise(transferPacket);
             return transferPacket;
         }
@@ -53,7 +53,7 @@ namespace ARQ_Model.Protocols
         private void ProcessPacket(BitArray packet)
         {
             var conclusion = checksumGenerator.CheckChecksum(packet) ? "correct" : "incorrect";
-            fileWriter.WriteLine($"Packet #{requestNumber} received as {conclusion}: " + packet.ToDigitString());
+            fileWriter.WriteLine($"Packet #{requestNumber} received as {conclusion}: {packet.ToDigitString()}");
         }
     }
 }
