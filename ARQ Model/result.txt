@@ -1,0 +1,128 @@
+Packet #0 sent: 010010101
+Packet #0 received as correct: 010010101
+Packet #1 sent: 011100111
+Packet #1 received as correct: 011100111
+Packet #2 sent: 100010101
+Packet #2 received as correct: 100010101
+Packet #3 sent: 000101101
+Packet #3 received as correct: 000101101
+Packet #4 sent: 001110111
+Packet #4 received as correct: 001110111
+Packet #5 sent: 001001011
+Packet #5 received as correct: 001001011
+Packet #6 sent: 000001100
+Packet #6 received as incorrect: 000101100
+Packet #7 sent: 111011001
+Packet #7 received as correct: 111011001
+Packet #8 sent: 111010000
+Packet #8 received as correct: 111010000
+Packet #9 sent: 101011011
+Packet #9 received as correct: 101011011
+Packet #10 sent: 010001101
+Packet #10 received as correct: 010001101
+Packet #11 sent: 011010010
+Packet #11 received as correct: 011010010
+Packet #12 sent: 110111010
+Packet #12 received as correct: 110111010
+Packet #13 sent: 001101001
+Packet #13 received as correct: 001101001
+Packet #14 sent: 000011101
+Packet #14 received as correct: 000011101
+Packet #15 sent: 100010011
+Packet #15 received as correct: 100010011
+Packet #16 sent: 010001011
+Packet #16 received as correct: 010001011
+Packet #17 sent: 100010011
+Packet #17 received as correct: 100010011
+Packet #18 sent: 000110000
+Packet #18 received as correct: 000110000
+Packet #19 sent: 011110110
+Packet #19 received as incorrect: 011010110
+Packet #20 sent: 101110110
+Packet #20 received as correct: 101110110
+Packet #21 sent: 010010011
+Packet #21 received as correct: 010010011
+Packet #22 sent: 101010001
+Packet #22 received as correct: 101010001
+Packet #23 sent: 101010001
+Packet #23 received as correct: 101010001
+Packet #24 sent: 011001001
+Packet #24 received as correct: 011001001
+Packet #25 sent: 000100001
+Packet #25 received as incorrect: 010100001
+Packet #26 sent: 011101011
+Packet #26 received as incorrect: 111101011
+Packet #27 sent: 111110001
+Packet #27 received as correct: 111110001
+Packet #28 sent: 000010001
+Packet #28 received as correct: 000010001
+Packet #29 sent: 101111100
+Packet #29 received as correct: 101111100
+Packet #30 sent: 011110110
+Packet #30 received as correct: 011110110
+Packet #31 sent: 000100100
+Packet #31 received as correct: 000100100
+Packet #32 sent: 111001011
+Packet #32 received as correct: 111001011
+Packet #33 sent: 000011101
+Packet #33 received as correct: 000011101
+Packet #34 sent: 101100001
+Packet #34 received as correct: 101100001
+Packet #35 sent: 000110101
+Packet #35 received as correct: 000110101
+Packet #36 sent: 101000011
+Packet #36 received as correct: 101000011
+Packet #37 sent: 100111000
+Packet #37 received as correct: 100111000
+Packet #38 sent: 011011101
+Packet #38 received as incorrect: 011011100
+Packet #39 sent: 111111110
+Packet #39 received as correct: 111111110
+Packet #40 sent: 011000000
+Packet #40 received as correct: 011000000
+Packet #41 sent: 110010100
+Packet #41 received as correct: 110010100
+Packet #42 sent: 011011110
+Packet #42 received as correct: 011011110
+Packet #43 sent: 011111010
+Packet #43 received as correct: 011111010
+Packet #44 sent: 110010100
+Packet #44 received as correct: 110010100
+Packet #45 sent: 000010111
+Packet #45 received as correct: 000010111
+Packet #46 sent: 111100011
+Packet #46 received as correct: 111100011
+Packet #47 sent: 000101000
+Packet #47 received as correct: 000101000
+Packet #48 sent: 111100000
+Packet #48 received as correct: 111100000
+Packet #49 sent: 101101101
+Packet #49 received as correct: 101101101
+Packet #50 sent: 001001101
+Packet #50 received as correct: 001001101
+Packet #51 sent: 111001101
+Packet #51 received as correct: 111001101
+Packet #52 sent: 101010111
+Packet #52 received as correct: 101010111
+Packet #53 sent: 100011001
+Packet #53 received as correct: 100011001
+Packet #54 sent: 100100101
+Packet #54 received as correct: 100100101
+Packet #55 sent: 000000110
+Packet #55 received as correct: 000000110
+Packet #56 sent: 100111011
+Packet #56 received as correct: 100111011
+Packet #57 sent: 001111000
+Packet #57 received as correct: 001111000
+Packet #58 sent: 100000100
+Packet #58 received as correct: 100000100
+Packet #59 sent: 001010110
+Packet #59 received as correct: 001010110
+Packet #60 sent: 101011110
+Packet #60 received as correct: 101011110
+Packet #61 sent: 100000100
+Packet #61 received as correct: 100000100
+Packet #62 sent: 111001000
+Packet #62 received as correct: 111001000
+Packet #63 sent: 010110010
+Packet #63 received as correct: 010110010
