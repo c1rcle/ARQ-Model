@@ -6,54 +6,40 @@ using ARQ_Model.Utility;
 
 namespace ARQ_Model.Protocols
 {
-    public class GoBackNProtocol
+    public class GoBackNProtocol : Protocol
     {
-        private readonly byte[] transferData;
-
-        private readonly UniformNoise noiseGenerator;
-
-        private readonly IChecksum checksumGenerator;
-
-        private StreamWriter fileWriter;
-        
         private int requestNumber;
 
-        public GoBackNProtocol(int byteCount, IChecksum checksumGenerator)
+        public GoBackNProtocol(int byteCount, IChecksum checksumGenerator, string filename) 
+            : base(byteCount, checksumGenerator, filename)
         {
-            this.checksumGenerator = checksumGenerator;
             requestNumber = 0;
-            transferData = new byte[byteCount];
-            noiseGenerator = new UniformNoise(0.01d);
-            
-            var numberGenerator = new Random();
-            numberGenerator.NextBytes(transferData);
         }
         
-        public void StartSimulation(string filename)
+        public override void StartSimulation()
         {
-            fileWriter = new StreamWriter(filename);
-            while (requestNumber < transferData.Length)
+            while (requestNumber < TransferData.Length)
             {
                 ProcessPacket(SendPacket());
                 requestNumber++;
             }
-            fileWriter.Close();
+            FileWriter.Close();
         }
 
-        private BitArray SendPacket()
+        protected override BitArray SendPacket()
         {
-            var currentByte = transferData[requestNumber];
-            var transferPacket = checksumGenerator.CalculateChecksum(
+            var currentByte = TransferData[requestNumber];
+            var transferPacket = ChecksumGenerator.CalculateChecksum(
                 new BitArray(new[] { currentByte }));
-            fileWriter.WriteLine($"Packet #{requestNumber} sent: {transferPacket.ToDigitString()}");
-            transferPacket = noiseGenerator.GenerateNoise(transferPacket);
+            FileWriter.WriteLine($"Packet #{requestNumber} sent: {transferPacket.ToDigitString()}");
+            transferPacket = NoiseGenerator.GenerateNoise(transferPacket);
             return transferPacket;
         }
 
-        private void ProcessPacket(BitArray packet)
+        protected override void ProcessPacket(BitArray packet)
         {
-            var conclusion = checksumGenerator.CheckChecksum(packet) ? "correct" : "incorrect";
-            fileWriter.WriteLine($"Packet #{requestNumber} received as {conclusion}: {packet.ToDigitString()}");
+            var conclusion = ChecksumGenerator.CheckChecksum(packet) ? "correct" : "incorrect";
+            FileWriter.WriteLine($"Packet #{requestNumber} received as {conclusion}: {packet.ToDigitString()}");
         }
     }
 }

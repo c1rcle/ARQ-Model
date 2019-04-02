@@ -7,8 +7,8 @@ namespace ARQ_Model
     {
         private static void Main(string[] args)
         {
-            var protocol = new GoBackNProtocol(64, new BitParity());
-            protocol.StartSimulation("result.txt");
+            var protocol = new GoBackNProtocol(64, new BitParity(), "result.txt");
+            protocol.StartSimulation();
         }
     }
 }
