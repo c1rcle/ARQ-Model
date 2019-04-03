@@ -15,7 +15,7 @@ namespace ARQ_Model
         private static void Main(string[] args)
         {
             //Make a new object of class GoBackNProtocol and initialize its properties.
-            var protocol = new GoBackNProtocol(8, new BitParity(), "result.txt", 3)
+            var protocol = new GoBackNProtocol(57, new BitParity(), "result.txt", 8)
             {
                 FlipProbability = 0.001d, PacketLossProbability = 0.05d, AckLossProbability = 0.1d
             };

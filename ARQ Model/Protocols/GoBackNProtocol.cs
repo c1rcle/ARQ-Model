@@ -49,8 +49,8 @@ namespace ARQ_Model.Protocols
         public GoBackNProtocol(int byteCount, IChecksum checksumGenerator, string filename, int windowSize)
             : base(byteCount, checksumGenerator, filename)
         {
-            //Packet window cannot be smaller than 0.
-            if (windowSize < 1) throw new ArgumentException("Wrong parameter!");
+            //Packet window size cannot be bigger or equal than the number of sequence numbers.
+            if (windowSize >= byteCount) throw new ArgumentException("Wrong parameter!");
 
             this.windowSize = windowSize;
             requestNumber = 0;
@@ -125,32 +125,25 @@ namespace ARQ_Model.Protocols
                 {
                     FileWriter.WriteLine("ACK timeout. Resending packets.");
                     currentWindow.Clear();
-                    //Used so that we won't resend additional packets when window reaches the end of data.
-                    if (requestNumber >= TransferData.Length)
-                        windowPacketsLeft = TransferData.Length + windowSize - requestNumber;
-                    else
                     //Send as much packets as possible in a window.
-                        windowPacketsLeft = TransferData.Length - requestNumber / windowSize > 0
-                            ? windowSize
-                            : TransferData.Length - requestNumber;
-
                     requestNumber -= windowSize;
+                    windowPacketsLeft = (TransferData.Length - requestNumber - 1) / windowSize > 0 
+                        ? windowSize
+                        : TransferData.Length - requestNumber;
                     for (var i = 0; i < windowPacketsLeft; i++)
                     {
                         currentWindow.Enqueue(SendPacket());
                         requestNumber++;
                     }
+                    requestNumber += windowSize - windowPacketsLeft;
                     break;
                 }
 
                 //This is going to be called at the start of simulation.
                 case false:
                 {
-                    windowPacketsLeft = TransferData.Length - requestNumber / windowSize > 0
-                        ? windowSize
-                        : TransferData.Length - requestNumber;
                     FileWriter.WriteLine($"Transmitting {windowPacketsLeft} packets, starting from #{requestNumber}.");
-                    for (var i = 0; i < windowPacketsLeft; i++)
+                    for (var i = 0; i < windowSize; i++)
                     {
                         currentWindow.Enqueue(SendPacket());
                         requestNumber++;
