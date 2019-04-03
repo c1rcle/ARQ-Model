@@ -2,16 +2,30 @@ using System.Collections;
 
 namespace ARQ_Model.Utility
 {
+    /// <summary>
+    /// Class that represents a packet.
+    /// </summary>
     public class Packet
     {
+        /// <summary>
+        /// Packet class constructor.
+        /// </summary>
+        /// <param name="packetData">Raw data packet.</param>
+        /// <param name="index">Packet index.</param>
         public Packet(BitArray packetData, int index)
         {
             PacketData = packetData;
             Index = index;
         }
 
+        /// <summary>
+        /// Holds raw packet data.
+        /// </summary>
         public BitArray PacketData { get; }
 
+        /// <summary>
+        /// Packet index.
+        /// </summary>
         public int Index { get; }
     }
 }

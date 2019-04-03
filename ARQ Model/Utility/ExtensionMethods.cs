@@ -3,8 +3,16 @@ using System.Text;
 
 namespace ARQ_Model.Utility
 {
+    /// <summary>
+    /// Static class for extension methods.
+    /// </summary>
     public static class ExtensionMethods
     {
+        /// <summary>
+        /// Extension function for BitArray class. Allows for printing object contents using a string.
+        /// </summary>
+        /// <param name="packet">Object to be represented as string.</param>
+        /// <returns>String of "1" and "0" representing an object.</returns>
         public static string ToDigitString(this BitArray packet)
         {
             var builder = new StringBuilder();
