@@ -11,6 +11,7 @@ namespace ARQ_Model.Protocols
         private readonly Queue<Packet> currentWindow;
 
         private readonly List<int> packetsAcquired;
+
         private readonly int windowSize;
 
         private bool? currentAcknowledgement;
