@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using ARQ_Model.Checksum;
 using ARQ_Model.Utility;
 
@@ -45,9 +46,8 @@ namespace ARQ_Model.Protocols
         /// </summary>
         private int windowPacketsLeft;
 
-        public GoBackNProtocol(int byteCount, int packetSize, IChecksum checksumGenerator, string filename,
-            int windowSize)
-            : base(byteCount, packetSize, checksumGenerator, filename)
+        public GoBackNProtocol(int byteCount, int packetSize, IChecksum checksumGenerator, int windowSize)
+            : base(byteCount, packetSize, checksumGenerator)
         {
             //Packet window size cannot be bigger or equal than the number of sequence numbers.
             if (windowSize >= TransferData.Length) throw new ArgumentException("Wrong parameter!");
@@ -61,19 +61,23 @@ namespace ARQ_Model.Protocols
         /// <inheritdoc />
         public override void StartSimulation()
         {
-            //Clear the packets acquired list and flags.
-            packetsAcquired.Clear();
-            currentAcknowledgement = false;
-            transmissionFinished = false;
-            //We can set probability after creating an object by using its property.
-            NoiseGenerator.FlipProbability = FlipProbability;
-            while (true)
+            using (FileWriter = new StreamWriter(Filename))
             {
-                SenderTask();
-                if (transmissionFinished) break;
-                ReceiverTask();
+                FileWriter.WriteLine($"Using {ChecksumGenerator}, window size: {windowSize}, " +
+                                     $"packet count: {TransferData.Length}");
+                //Clear the packets acquired list and flags.
+                packetsAcquired.Clear();
+                currentAcknowledgement = false;
+                transmissionFinished = false;
+                //We can set probability after creating an object by using its property.
+                NoiseGenerator.FlipProbability = FlipProbability;
+                while (true)
+                {
+                    SenderTask();
+                    if (transmissionFinished) break;
+                    ReceiverTask();
+                }
             }
-            FileWriter.Close();
         }
 
         /// <inheritdoc />

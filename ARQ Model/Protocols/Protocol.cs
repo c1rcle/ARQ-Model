@@ -19,17 +19,17 @@ namespace ARQ_Model.Protocols
         /// <param name="byteCount">Number of bytes that are going to be sent.</param>
         /// <param name="packetSize">Single packet maximum byte size.</param>
         /// <param name="checksumGenerator">Checksum calculation method for packets.</param>
-        /// <param name="filename">"Name of simulation result file."</param>
         /// <exception cref="ArgumentException">Minimum number of bytes is 1.</exception>
-        protected Protocol(int byteCount, int packetSize, IChecksum checksumGenerator, string filename)
+        protected Protocol(int byteCount, int packetSize, IChecksum checksumGenerator)
         {
             //We can't transfer less than 1 byte. Packet size must be smaller than byte count.
             if (byteCount < 1 || packetSize > byteCount) throw new ArgumentException("Wrong parameter!");
 
-            //Default probability values.
+            //Default property values.
             FlipProbability = 0.01d;
             PacketLossProbability = 0.005d;
             AckLossProbability = 0.005d;
+            Filename = "result.txt";
 
             //Generate 'byteCount' random bytes for transfer.
             var numberGenerator = new Random();
@@ -49,7 +49,6 @@ namespace ARQ_Model.Protocols
             //Initialize object properties.
             NoiseGenerator = new UniformNoise(FlipProbability);
             ChecksumGenerator = checksumGenerator;
-            FileWriter = new StreamWriter(filename);
             TransferData = packetList.ToArray();
         }
 
@@ -67,6 +66,11 @@ namespace ARQ_Model.Protocols
         /// Probability of losing an acknowledgment during transmission.
         /// </summary>
         public double AckLossProbability { protected get; set; }
+        
+        /// <summary>
+        /// Result file filename.
+        /// </summary>
+        public string Filename { protected get; set; }
 
         /// <summary>
         /// Data that is going to be transferred during simulation.
@@ -86,7 +90,7 @@ namespace ARQ_Model.Protocols
         /// <summary>
         /// StreamWriter used to write data to a file.
         /// </summary>
-        protected StreamWriter FileWriter { get; }
+        protected StreamWriter FileWriter { get; set; }
 
         /// <summary>
         /// Starts simulation and writes data to a file.

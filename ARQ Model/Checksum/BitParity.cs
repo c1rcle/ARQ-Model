@@ -31,5 +31,10 @@ namespace ARQ_Model.Checksum
             counter %= 2;
             return Convert.ToBoolean(counter) == packet[packet.Length - 1];
         }
+
+        public override string ToString()
+        {
+            return "bit parity checksum";
+        }
     }
 }
