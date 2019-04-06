@@ -1,6 +1,6 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using ARQ_Model.Checksum;
 using ARQ_Model.Utility;
 
@@ -17,7 +17,7 @@ namespace ARQ_Model.Protocols
         private readonly Queue<Packet> currentWindow;
 
         /// <summary>
-        /// List of acquired packet indices by the receiver. 
+        /// List of acquired packet indices by the receiver.
         /// </summary>
         private readonly List<int> packetsAcquired;
 
@@ -45,12 +45,12 @@ namespace ARQ_Model.Protocols
         /// Number of packets that can be transported in a given window.
         /// </summary>
         private int windowPacketsLeft;
-        
-        public GoBackNProtocol(int byteCount, IChecksum checksumGenerator, string filename, int windowSize)
-            : base(byteCount, checksumGenerator, filename)
+
+        public GoBackNProtocol(int byteCount, int packetSize, IChecksum checksumGenerator, int windowSize)
+            : base(byteCount, packetSize, checksumGenerator)
         {
             //Packet window size cannot be bigger or equal than the number of sequence numbers.
-            if (windowSize >= byteCount) throw new ArgumentException("Wrong parameter!");
+            if (windowSize >= TransferData.Length) throw new ArgumentException("Wrong parameter!");
 
             this.windowSize = windowSize;
             requestNumber = 0;
@@ -61,28 +61,30 @@ namespace ARQ_Model.Protocols
         /// <inheritdoc />
         public override void StartSimulation()
         {
-            //Clear the packets acquired list and flags.
-            packetsAcquired.Clear();
-            currentAcknowledgement = false;
-            transmissionFinished = false;
-            //We can set probability after creating an object by using its property.
-            NoiseGenerator.FlipProbability = FlipProbability;
-            while (true)
+            using (FileWriter = new StreamWriter(Filename))
             {
-                SenderTask();
-                if (transmissionFinished) break;
-                ReceiverTask();
+                FileWriter.WriteLine($"Using {ChecksumGenerator}, window size: {windowSize}, " +
+                                     $"packet count: {TransferData.Length}");
+                //Clear the packets acquired list and flags.
+                packetsAcquired.Clear();
+                currentAcknowledgement = false;
+                transmissionFinished = false;
+                //We can set probability after creating an object by using its property.
+                NoiseGenerator.FlipProbability = FlipProbability;
+                while (true)
+                {
+                    SenderTask();
+                    if (transmissionFinished) break;
+                    ReceiverTask();
+                }
             }
-            FileWriter.Close();
         }
 
         /// <inheritdoc />
         protected override Packet SendPacket()
         {
             //Generate a packet, append a checksum and pass it through a noise simulator.
-            var currentByte = TransferData[requestNumber];
-            var transferPacket = ChecksumGenerator.CalculateChecksum(
-                new BitArray(new[] {currentByte}));
+            var transferPacket = ChecksumGenerator.CalculateChecksum(TransferData[requestNumber]);
             FileWriter.WriteLine($"Packet #{requestNumber} sent: {transferPacket.ToDigitString()}");
             transferPacket = NoiseGenerator.GenerateNoise(transferPacket);
             //Packet can be lost (it will be null then).
@@ -120,53 +122,65 @@ namespace ARQ_Model.Protocols
         {
             switch (currentAcknowledgement)
             {
-                //If there was a timeout we send all packets from the current window again.
-                case null:
-                {
-                    FileWriter.WriteLine("ACK timeout. Resending packets.");
-                    currentWindow.Clear();
-                    //Send as much packets as possible in a window.
-                    requestNumber -= windowSize;
-                    windowPacketsLeft = (TransferData.Length - requestNumber - 1) / windowSize > 0 
-                        ? windowSize
-                        : TransferData.Length - requestNumber;
-                    for (var i = 0; i < windowPacketsLeft; i++)
-                    {
-                        currentWindow.Enqueue(SendPacket());
-                        requestNumber++;
-                    }
-                    requestNumber += windowSize - windowPacketsLeft;
-                    break;
-                }
-
-                //This is going to be called at the start of simulation.
                 case false:
-                {
-                    FileWriter.WriteLine($"Transmitting {windowPacketsLeft} packets, starting from #{requestNumber}.");
-                    for (var i = 0; i < windowSize; i++)
-                    {
-                        currentWindow.Enqueue(SendPacket());
-                        requestNumber++;
-                    }
+                    SendFirstWindow();
                     break;
-                }
-
-                //ACK was acquired so we send the next packet and advance the window.
+                case null:
+                    NullAckAcquired();
+                    break;
                 default:
-                {
-                    FileWriter.WriteLine($"ACK acquired for #{requestNumber - windowSize}");
-                    if (requestNumber >= TransferData.Length)
-                    {
-                        if (requestNumber - windowSize == TransferData.Length - 1) transmissionFinished = true;
-                        requestNumber++;
-                        return;
-                    }
-
-                    currentWindow.Enqueue(SendPacket());
-                    requestNumber++;
+                    CorrectAckAcquired();
                     break;
-                }
             }
+        }
+
+        /// <summary>
+        /// Sender helper method. Sends first window.
+        /// </summary>
+        private void SendFirstWindow()
+        {
+            FileWriter.WriteLine($"Transmitting {windowSize} packets, starting from #{requestNumber}.");
+            for (var i = 0; i < windowSize; i++)
+            {
+                currentWindow.Enqueue(SendPacket());
+                requestNumber++;
+            }
+        }
+
+        /// <summary>
+        /// Sender helper method. In the event of a timeout it retransmits current window.
+        /// </summary>
+        private void NullAckAcquired()
+        {
+            FileWriter.WriteLine("ACK timeout. Resending packets.");
+            currentWindow.Clear();
+            //Send as much packets as possible in a window.
+            requestNumber -= windowSize;
+            windowPacketsLeft = (TransferData.Length - requestNumber - 1) / windowSize > 0
+                ? windowSize
+                : TransferData.Length - requestNumber;
+            for (var i = 0; i < windowPacketsLeft; i++)
+            {
+                currentWindow.Enqueue(SendPacket());
+                requestNumber++;
+            }
+            requestNumber += windowSize - windowPacketsLeft;
+        }
+
+        /// <summary>
+        /// Sender helper method. On correct Ack acquisition it advances the window by one and sends next packet.
+        /// </summary>
+        private void CorrectAckAcquired()
+        {
+            FileWriter.WriteLine($"ACK acquired for #{requestNumber - windowSize}");
+            if (requestNumber >= TransferData.Length)
+            {
+                if (requestNumber - windowSize == TransferData.Length - 1) transmissionFinished = true;
+                requestNumber++;
+                return;
+            }
+            currentWindow.Enqueue(SendPacket());
+            requestNumber++;
         }
 
         /// <summary>
