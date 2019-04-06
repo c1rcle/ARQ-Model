@@ -1,91 +1,107 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using ARQ_Model.Checksum;
 using ARQ_Model.Utility;
 
 namespace ARQ_Model.Protocols
 {
     /// <summary>
-    /// Protocol abstract class.
+    ///     Protocol abstract class.
     /// </summary>
     public abstract class Protocol
     {
         /// <summary>
-        /// Constructor for the Protocol abstract class.
+        ///     Constructor for the Protocol abstract class.
         /// </summary>
         /// <param name="byteCount">Number of bytes that are going to be sent.</param>
+        /// <param name="packetSize">Single packet maximum byte size.</param>
         /// <param name="checksumGenerator">Checksum calculation method for packets.</param>
         /// <param name="filename">"Name of simulation result file."</param>
         /// <exception cref="ArgumentException">Minimum number of bytes is 1.</exception>
-        protected Protocol(int byteCount, IChecksum checksumGenerator, string filename)
+        protected Protocol(int byteCount, int packetSize, IChecksum checksumGenerator, string filename)
         {
-            //We can't transfer less than 1 byte.
-            if (byteCount < 1) throw new ArgumentException("Wrong parameter!");
+            //We can't transfer less than 1 byte. Packet size must be smaller than byte count.
+            if (byteCount < 1 || packetSize > byteCount) throw new ArgumentException("Wrong parameter!");
 
             //Default probability values.
             FlipProbability = 0.01d;
             PacketLossProbability = 0.005d;
             AckLossProbability = 0.005d;
 
+            //Generate 'byteCount' random bytes for transfer.
+            var numberGenerator = new Random();
+            var data = new byte[byteCount];
+            var fullPacketCount = byteCount / packetSize;
+            numberGenerator.NextBytes(data);
+
+            //Split array into individual packets.
+            var packetList = new List<BitArray>();
+            for (var i = 0; i < fullPacketCount; i++)
+            {
+                packetList.Add(new BitArray(data.Take(packetSize).ToArray()));
+                data = data.Skip(packetSize).ToArray();
+            }
+
+            packetList.Add(new BitArray(data.Take(data.Length).ToArray()));
+
             //Initialize object properties.
-            TransferData = new byte[byteCount];
             NoiseGenerator = new UniformNoise(FlipProbability);
             ChecksumGenerator = checksumGenerator;
             FileWriter = new StreamWriter(filename);
-
-            //Generate 'byteCount' random bytes for transfer.
-            var numberGenerator = new Random();
-            numberGenerator.NextBytes(TransferData);
+            TransferData = packetList.ToArray();
         }
 
         /// <summary>
-        /// Probability of bit flip during transmission.
+        ///     Probability of bit flip during transmission.
         /// </summary>
         public double FlipProbability { protected get; set; }
 
         /// <summary>
-        /// Probability of losing a packet during transmission.
+        ///     Probability of losing a packet during transmission.
         /// </summary>
         public double PacketLossProbability { protected get; set; }
 
         /// <summary>
-        /// Probability of losing an acknowledgment during transmission.
+        ///     Probability of losing an acknowledgment during transmission.
         /// </summary>
         public double AckLossProbability { protected get; set; }
 
         /// <summary>
-        /// Data that is going to be transferred during simulation.
+        ///     Data that is going to be transferred during simulation.
         /// </summary>
-        protected byte[] TransferData { get; }
+        protected BitArray[] TransferData { get; }
 
         /// <summary>
-        /// Uniform noise generator for noise simulation.
+        ///     Uniform noise generator for noise simulation.
         /// </summary>
         protected UniformNoise NoiseGenerator { get; }
 
         /// <summary>
-        /// Object implementing the IChecksum interface (see IChecksum for details).
+        ///     Object implementing the IChecksum interface (see IChecksum for details).
         /// </summary>
         protected IChecksum ChecksumGenerator { get; }
 
         /// <summary>
-        /// StreamWriter used to write data to a file.
+        ///     StreamWriter used to write data to a file.
         /// </summary>
         protected StreamWriter FileWriter { get; }
 
         /// <summary>
-        /// Starts simulation and writes data to a file.
+        ///     Starts simulation and writes data to a file.
         /// </summary>
         public abstract void StartSimulation();
 
         /// <summary>
-        /// Generates a packet (appends a checksum) that goes through a simulated medium.
+        ///     Generates a packet (appends a checksum) that goes through a simulated medium.
         /// </summary>
         /// <returns>Packet passed through a NoiseGenerator.</returns>
         protected abstract Packet SendPacket();
 
         /// <summary>
-        /// Checks whether packet was transmitted correctly.
+        ///     Checks whether packet was transmitted correctly.
         /// </summary>
         /// <param name="packet">Packet passed through a NoiseGenerator.</param>
         /// <returns>null - ACK lost simulation or incorrect packet/lost packet, true - correct ACK.</returns>
