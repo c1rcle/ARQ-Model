@@ -4,12 +4,12 @@ using ARQ_Model.Protocols;
 namespace ARQ_Model
 {
     /// <summary>
-    ///     Program entry point class.
+    /// Program entry point class.
     /// </summary>
     internal static class Program
     {
         /// <summary>
-        ///     Entry program function.
+        /// Entry program function.
         /// </summary>
         /// <param name="args">Program parameters.</param>
         private static void Main(string[] args)

@@ -6,42 +6,42 @@ using ARQ_Model.Utility;
 namespace ARQ_Model.Protocols
 {
     /// <summary>
-    ///     GoBackNProtocol implementation.
+    /// GoBackNProtocol implementation.
     /// </summary>
     public class GoBackNProtocol : Protocol
     {
         /// <summary>
-        ///     Current window of packets for the receiver.
+        /// Current window of packets for the receiver.
         /// </summary>
         private readonly Queue<Packet> currentWindow;
 
         /// <summary>
-        ///     List of acquired packet indices by the receiver.
+        /// List of acquired packet indices by the receiver.
         /// </summary>
         private readonly List<int> packetsAcquired;
 
         /// <summary>
-        ///     Sender window size.
+        /// Sender window size.
         /// </summary>
         private readonly int windowSize;
 
         /// <summary>
-        ///     Current ACK request that was sent by the receiver.
+        /// Current ACK request that was sent by the receiver.
         /// </summary>
         private bool? currentAcknowledgement;
 
         /// <summary>
-        ///     Request number for the sender to keep track of packet order.
+        /// Request number for the sender to keep track of packet order.
         /// </summary>
         private int requestNumber;
 
         /// <summary>
-        ///     Boolean used to stop simulation (every packet was sent).
+        /// Boolean used to stop simulation (every packet was sent).
         /// </summary>
         private bool transmissionFinished;
 
         /// <summary>
-        ///     Number of packets that can be transported in a given window.
+        /// Number of packets that can be transported in a given window.
         /// </summary>
         private int windowPacketsLeft;
 
@@ -73,7 +73,6 @@ namespace ARQ_Model.Protocols
                 if (transmissionFinished) break;
                 ReceiverTask();
             }
-
             FileWriter.Close();
         }
 
@@ -113,7 +112,7 @@ namespace ARQ_Model.Protocols
         }
 
         /// <summary>
-        ///     Simulates a sender process.
+        /// Simulates a sender process.
         /// </summary>
         private void SenderTask()
         {
@@ -132,7 +131,7 @@ namespace ARQ_Model.Protocols
         }
 
         /// <summary>
-        ///     Sender helper method. Sends first window.
+        /// Sender helper method. Sends first window.
         /// </summary>
         private void SendFirstWindow()
         {
@@ -145,7 +144,7 @@ namespace ARQ_Model.Protocols
         }
 
         /// <summary>
-        ///     Sender helper method. In the event of a timeout it retransmits current window.
+        /// Sender helper method. In the event of a timeout it retransmits current window.
         /// </summary>
         private void NullAckAcquired()
         {
@@ -161,12 +160,11 @@ namespace ARQ_Model.Protocols
                 currentWindow.Enqueue(SendPacket());
                 requestNumber++;
             }
-
             requestNumber += windowSize - windowPacketsLeft;
         }
 
         /// <summary>
-        ///     Sender helper method. On correct Ack acquisition it advances the window by one and sends next packet.
+        /// Sender helper method. On correct Ack acquisition it advances the window by one and sends next packet.
         /// </summary>
         private void CorrectAckAcquired()
         {
@@ -177,13 +175,12 @@ namespace ARQ_Model.Protocols
                 requestNumber++;
                 return;
             }
-
             currentWindow.Enqueue(SendPacket());
             requestNumber++;
         }
 
         /// <summary>
-        ///     Simulates a receiver process.
+        /// Simulates a receiver process.
         /// </summary>
         private void ReceiverTask()
         {

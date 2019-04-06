@@ -9,12 +9,12 @@ using ARQ_Model.Utility;
 namespace ARQ_Model.Protocols
 {
     /// <summary>
-    ///     Protocol abstract class.
+    /// Protocol abstract class.
     /// </summary>
     public abstract class Protocol
     {
         /// <summary>
-        ///     Constructor for the Protocol abstract class.
+        /// Constructor for the Protocol abstract class.
         /// </summary>
         /// <param name="byteCount">Number of bytes that are going to be sent.</param>
         /// <param name="packetSize">Single packet maximum byte size.</param>
@@ -44,7 +44,6 @@ namespace ARQ_Model.Protocols
                 packetList.Add(new BitArray(data.Take(packetSize).ToArray()));
                 data = data.Skip(packetSize).ToArray();
             }
-
             packetList.Add(new BitArray(data.Take(data.Length).ToArray()));
 
             //Initialize object properties.
@@ -55,53 +54,53 @@ namespace ARQ_Model.Protocols
         }
 
         /// <summary>
-        ///     Probability of bit flip during transmission.
+        /// Probability of bit flip during transmission.
         /// </summary>
         public double FlipProbability { protected get; set; }
 
         /// <summary>
-        ///     Probability of losing a packet during transmission.
+        /// Probability of losing a packet during transmission.
         /// </summary>
         public double PacketLossProbability { protected get; set; }
 
         /// <summary>
-        ///     Probability of losing an acknowledgment during transmission.
+        /// Probability of losing an acknowledgment during transmission.
         /// </summary>
         public double AckLossProbability { protected get; set; }
 
         /// <summary>
-        ///     Data that is going to be transferred during simulation.
+        /// Data that is going to be transferred during simulation.
         /// </summary>
         protected BitArray[] TransferData { get; }
 
         /// <summary>
-        ///     Uniform noise generator for noise simulation.
+        /// Uniform noise generator for noise simulation.
         /// </summary>
         protected UniformNoise NoiseGenerator { get; }
 
         /// <summary>
-        ///     Object implementing the IChecksum interface (see IChecksum for details).
+        /// Object implementing the IChecksum interface (see IChecksum for details).
         /// </summary>
         protected IChecksum ChecksumGenerator { get; }
 
         /// <summary>
-        ///     StreamWriter used to write data to a file.
+        /// StreamWriter used to write data to a file.
         /// </summary>
         protected StreamWriter FileWriter { get; }
 
         /// <summary>
-        ///     Starts simulation and writes data to a file.
+        /// Starts simulation and writes data to a file.
         /// </summary>
         public abstract void StartSimulation();
 
         /// <summary>
-        ///     Generates a packet (appends a checksum) that goes through a simulated medium.
+        /// Generates a packet (appends a checksum) that goes through a simulated medium.
         /// </summary>
         /// <returns>Packet passed through a NoiseGenerator.</returns>
         protected abstract Packet SendPacket();
 
         /// <summary>
-        ///     Checks whether packet was transmitted correctly.
+        /// Checks whether packet was transmitted correctly.
         /// </summary>
         /// <param name="packet">Packet passed through a NoiseGenerator.</param>
         /// <returns>null - ACK lost simulation or incorrect packet/lost packet, true - correct ACK.</returns>
