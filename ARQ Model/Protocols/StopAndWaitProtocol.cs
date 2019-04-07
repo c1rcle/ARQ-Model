@@ -8,7 +8,7 @@ namespace ARQ_Model.Protocols
     ///<summary>
     ///StopNWait Protocol implementation.
     ///</summary>
-    public class StopNWaitProtocol : Protocol
+    public class StopAndWaitProtocol : Protocol
     {
         /// <summary>
         /// Request number for the sender to keep track of packet order.
@@ -35,7 +35,7 @@ namespace ARQ_Model.Protocols
         /// </summary>
         private bool transmissionFinished;
 
-        public StopNWaitProtocol(int byteCount, int packetSize, IChecksum checksumGenerator)
+        public StopAndWaitProtocol(int byteCount, int packetSize, IChecksum checksumGenerator)
             : base(byteCount, packetSize, checksumGenerator)
         {
             requestNumber = 0;
@@ -43,13 +43,14 @@ namespace ARQ_Model.Protocols
             currentPacket = null;
         }
 
+        /// <inheritdoc />
         public override void StartSimulation()
         {
             using (FileWriter = new StreamWriter(Filename))
             {
                 FileWriter.WriteLine($"Using {ChecksumGenerator}, " +
                                      $"packet count: {TransferData.Length}");
-                //Clear flags and packets aquired list.                     
+                //Clear flags and packets acquired list.                     
                 packetsAcquired.Clear();
                 currentAcknowledgement = false;
                 transmissionFinished = false;
@@ -63,6 +64,20 @@ namespace ARQ_Model.Protocols
             }
         }
 
+        /// <inheritdoc />
+        protected override Packet SendPacket()
+        {
+            //Generates the packet, appends the checksum and sends it through the noise generator.
+            var transferPacket = ChecksumGenerator.CalculateChecksum(TransferData[requestNumber]);
+            FileWriter.WriteLine($"Packet #{requestNumber} sent: {transferPacket.ToDigitString()}");
+            transferPacket = NoiseGenerator.GenerateNoise(transferPacket);
+            //If packet is lost it becomes null.
+            return new Packet(NoiseGenerator.GetRandomWithProbability(PacketLossProbability)
+                ? null
+                : transferPacket, requestNumber); 
+        }
+        
+        /// <inheritdoc />
         protected override bool? ProcessPacket(Packet packet)
         {
             //If packet was corrupted we return null (it simulates a timeout).
@@ -82,27 +97,13 @@ namespace ARQ_Model.Protocols
             return NoiseGenerator.GetRandomWithProbability(AckLossProbability) ? new bool?() : true;
         }
 
-        protected override Packet SendPacket()
-        {
-            //Generates the packet, appends the checksum and sends it through the noise generator.
-            var transferPacket = ChecksumGenerator.CalculateChecksum(TransferData[requestNumber]);
-            FileWriter.WriteLine($"Packet #{requestNumber} sent: {transferPacket.ToDigitString()}");
-            transferPacket = NoiseGenerator.GenerateNoise(transferPacket);
-            //If packet is lost it becomes null.
-            return new Packet(NoiseGenerator.GetRandomWithProbability(PacketLossProbability)
-                ? null
-                : transferPacket, requestNumber); 
-        }
-
         /// <summary>
         /// Sender helper method, sends the first packet.
         /// </summary>
         private void SendFirstPacket()
         {
             FileWriter.WriteLine($"Transmitting packet #{requestNumber}.");
-            {
-                currentPacket = SendPacket();
-            }
+            currentPacket = SendPacket();
         }
 
         /// <summary>
@@ -111,7 +112,7 @@ namespace ARQ_Model.Protocols
         private void CorrectAckAcquired()
         {
             FileWriter.WriteLine($"ACK acquired for #{requestNumber}");
-            if (requestNumber >= TransferData.Length)
+            if (requestNumber == TransferData.Length - 1)
             {
                 transmissionFinished = true;
                 return;
@@ -121,7 +122,7 @@ namespace ARQ_Model.Protocols
         }
 
         /// <summary>
-        /// Sender helper method. In the event of timeout it resends packet.
+        /// Sender helper method. In the event of timeout it retransmits packet.
         /// </summary>
         private void NullAckAcquired()
         {
