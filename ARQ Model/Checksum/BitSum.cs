@@ -4,8 +4,14 @@ using System.Linq;
 
 namespace ARQ_Model.Checksum
 {
+    /// <summary>
+    /// Bit '1' sum error code implementation.
+    /// </summary>
     public class BitSum : IChecksum
     {
+        /// <summary>
+        /// Bit count for error code.
+        /// </summary>
         private readonly int bitCount;
         
         public BitSum(int packetSize)
@@ -13,6 +19,7 @@ namespace ARQ_Model.Checksum
             bitCount = (int) Math.Log(packetSize * 8, 2) + 1;
         }
         
+        /// <inheritdoc />
         public BitArray CalculateChecksum(BitArray packet)
         {
             var counter = 0;
@@ -27,6 +34,7 @@ namespace ARQ_Model.Checksum
             return newPacket;
         }
 
+        /// <inheritdoc />
         public bool CheckChecksum(BitArray packet)
         {
             var counter = 0;
@@ -38,6 +46,11 @@ namespace ARQ_Model.Checksum
             var packetChecksum = new BitArray(bitCount);
             for (var i = 0; i < bitCount; i++) packetChecksum[i] = packet[(packet.Length - bitCount) + i];
             return checksum.Xor(packetChecksum).OfType<bool>().All(x => !x);
+        }
+
+        public override string ToString()
+        {
+            return $"bit '1' sum with length: {bitCount}";
         }
     }
 }
