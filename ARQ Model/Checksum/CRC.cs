@@ -9,14 +9,32 @@ namespace ARQ_Model.Checksum
         /// <inheritdoc />
         public BitArray PacketWithCRCSent(BitArray packet)
         {
+            int crc_size;
+            var CRC=new BitArray(crc_size);
+            var PacketToSend = new BitArray(packet.Length + CRC.Length-1);//to bedzie pakiet wyjsciowy
+            var PacketTemp = new BitArray(packet.Length + CRC.Length-1);//to bedzie zerowany pakiet przez operacje XOR
+			
+            for (var i=0;i<packet.length;i++)//poczatek tymczasowego ma byc taki jak wejsciowy pakiet
+            {
+                PacketTemp[i]=packet[i];
+            }
+            for(var i=packet.length;i<PacketTemp.length-1;i++)
+            {
+                PacketTemp[i]=0;//a na koncu maja byc zera
+            }
             
-            var CRC=1101b;
-            var PacketToSend = new BitArray(packet.Length + CRC.Length);
-            var PacketTemp = new BitArray(packet.Length + CRC.Length);
-			int temp=0;
-			for(var i=0;i<CRC.Length;i++)
-			{if(packet[i]
-			}	
+            int indeks=0;//indeksy w tablicy tymczasowej do rozpoczecia xorowania (petla)
+            if(PacketTemp[indeks]!=0)
+            {temp=0;//wewnetrzny licznik petli xorujacej
+            for(var i=0;i<CRC.Length;i++)
+			    {
+                    PacketTemp[temp]=PacketTemp[temp]^CRC[i];
+                    temp++;
+                }
+                indeks++;
+            }
+            else 
+            indeks++;
 			           
             
             for (var i = 0; i < packet.Length; i++) PacketToSend[i] = packet[i];
@@ -32,16 +50,42 @@ namespace ARQ_Model.Checksum
         /// <inheritdoc />
         public bool CheckCRC(BitArray packet)
         {
-            //Calculate parity bit again and check the last bit of a packet.
-            var counter = 0;
-            for (var i = 0; i < packet.Length - 1; i++) if (packet[i]) counter++;
-            counter %= 2;
-            return Convert.ToBoolean(counter) == packet[packet.Length - 1];
+            int crc_size;
+            var CRC=new BitArray(crc_size);
+            var PacketTemp = new BitArray(packet.Length + CRC.Length-1);//to bedzie zerowany pakiet przez operacje XOR
+			
+            for (var i=0;i<packet.length;i++)//poczatek tymczasowego ma byc taki jak wejsciowy pakiet
+            {
+                PacketTemp[i]=packet[i];
+            }
+            for(var i=packet.length;i<PacketTemp.length-1;i++)
+            {
+                PacketTemp[i]=0;//a na koncu maja byc zera
+            }
+            
+            int indeks=0;//indeksy w tablicy tymczasowej do rozpoczecia xorowania (petla)
+            if(PacketTemp[indeks]!=0)
+            {temp=0;//wewnetrzny licznik petli xorujacej
+            for(var i=0;i<CRC.Length;i++)
+			    {
+                    PacketTemp[temp]=PacketTemp[temp]^CRC[i];
+                    temp++;
+                }
+                indeks++;
+            }
+            else 
+            indeks++;
+            bool num=true;//czy ostatnie wartosci po xorowaniu sa zerami(czy dobrze odebrano sygnal)
+            for(int i=packet.size;i<PacketTemp.size;i++)
+            {
+                if(PacketTemp) num=false;
+            }
+            return num;
         }
 
-        public override string ToString()
+       /*  public override string ToString()
         {
             return "bit parity checksum";
-        }
+        }*/
     }
 }
