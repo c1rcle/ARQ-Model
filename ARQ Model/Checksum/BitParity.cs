@@ -23,6 +23,7 @@ namespace ARQ_Model.Checksum
         }
 
         /// <inheritdoc />
+        /// sprawdzam czy umiem edytowac xD
         public bool CheckChecksum(BitArray packet)
         {
             //Calculate parity bit again and check the last bit of a packet.
