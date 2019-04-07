@@ -44,7 +44,7 @@ namespace ARQ_Model.Protocols
                 packetList.Add(new BitArray(data.Take(packetSize).ToArray()));
                 data = data.Skip(packetSize).ToArray();
             }
-            packetList.Add(new BitArray(data.Take(data.Length).ToArray()));
+            if (data.Length > 0) packetList.Add(new BitArray(data.Take(data.Length).ToArray()));
 
             //Initialize object properties.
             NoiseGenerator = new UniformNoise(FlipProbability);
