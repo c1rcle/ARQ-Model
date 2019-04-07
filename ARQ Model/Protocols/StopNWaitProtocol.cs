@@ -5,17 +5,34 @@ using ARQ_Model.Utility;
 
 namespace ARQ_Model.Protocols
 {
-
+    ///<summary>
+    ///StopNWait Protocol implementation.
+    ///</summary>
     public class StopNWaitProtocol : Protocol
     {
+        /// <summary>
+        /// Request number for the sender to keep track of packet order.
+        /// </summary>
         private int requestNumber;
 
+        /// <summary>
+        /// List of acquired packet indices by the receiver.
+        /// </summary>
         private readonly List<int> packetsAcquired;
 
+        ///<summary>
+        ///Current packet for the receiver.
+        ///</summary>
         private Packet currentPacket;
         
+        /// <summary>
+        /// Current ACK request that was sent by the receiver.
+        /// </summary>
         private bool? currentAcknowledgement;
 
+        /// <summary>
+        /// Boolean used to stop simulation when every packet was sent.
+        /// </summary>
         private bool transmissionFinished;
 
         public StopNWaitProtocol(int byteCount, int packetSize, IChecksum checksumGenerator)
@@ -32,6 +49,7 @@ namespace ARQ_Model.Protocols
             {
                 FileWriter.WriteLine($"Using {ChecksumGenerator}, " +
                                      $"packet count: {TransferData.Length}");
+                //Clear flags and packets aquired list.                     
                 packetsAcquired.Clear();
                 currentAcknowledgement = false;
                 transmissionFinished = false;
@@ -47,11 +65,14 @@ namespace ARQ_Model.Protocols
 
         protected override bool? ProcessPacket(Packet packet)
         {
+            //If packet was corrupted we return null (it simulates a timeout).
             if (packet.PacketData == null)
             {
                 FileWriter.WriteLine($"Packet #{packet.Index} was lost.");
                 return null;
             }
+
+            //Check if packet is not corrupted and send an acknowledgement (it can be lost too).
             var check = ChecksumGenerator.CheckChecksum(packet.PacketData);
             var conclusion = check ? "correct" : "incorrect";
             FileWriter.WriteLine($"Packet #{packet.Index} received as {conclusion}:" +
@@ -63,14 +84,19 @@ namespace ARQ_Model.Protocols
 
         protected override Packet SendPacket()
         {
+            //Generates the packet, appends the checksum and sends it through the noise generator.
             var transferPacket = ChecksumGenerator.CalculateChecksum(TransferData[requestNumber]);
             FileWriter.WriteLine($"Packet #{requestNumber} sent: {transferPacket.ToDigitString()}");
             transferPacket = NoiseGenerator.GenerateNoise(transferPacket);
+            //If packet is lost it becomes null.
             return new Packet(NoiseGenerator.GetRandomWithProbability(PacketLossProbability)
                 ? null
                 : transferPacket, requestNumber); 
         }
 
+        /// <summary>
+        /// Sender helper method, sends the first packet.
+        /// </summary>
         private void SendFirstPacket()
         {
             FileWriter.WriteLine($"Transmitting packet #{requestNumber}.");
@@ -79,6 +105,9 @@ namespace ARQ_Model.Protocols
             }
         }
 
+        /// <summary>
+        /// Sender helper method. On correct Ack acquisition it advances the request number and sends next packet.
+        /// </summary>
         private void CorrectAckAcquired()
         {
             FileWriter.WriteLine($"ACK acquired for #{requestNumber}");
@@ -91,12 +120,18 @@ namespace ARQ_Model.Protocols
             currentPacket = SendPacket();
         }
 
+        /// <summary>
+        /// Sender helper method. In the event of timeout it resends packet.
+        /// </summary>
         private void NullAckAcquired()
         {
             FileWriter.WriteLine("ACK timeout. Resending packet.");
             currentPacket = SendPacket();
         }
 
+        /// <summary>
+        /// Simulates a sender process.
+        /// </summary>
         private void SenderTask()
         {
             switch (currentAcknowledgement)
@@ -113,6 +148,9 @@ namespace ARQ_Model.Protocols
             }
         }
 
+        /// <summary>
+        /// Simulates a receiver process.
+        /// </summary>
         private void ReceiverTask()
         {
             currentAcknowledgement = ProcessPacket(currentPacket);
