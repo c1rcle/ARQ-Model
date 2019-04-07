@@ -50,8 +50,7 @@ namespace ARQ_Model.Checksum
             
             var packetChecksum = new BitArray(crcGenerator.HashSizeInBits);
             var bitOffset = packet.Length - crcGenerator.HashSizeInBits;
-            for (var i = bitOffset; i < packet.Length; i++)
-                packetChecksum[i - bitOffset] = packet[i];
+            for (var i = bitOffset; i < packet.Length; i++) packetChecksum[i - bitOffset] = packet[i];
             return crcGenerator.ComputeHash(rawBytes).AsBitArray().Xor(packetChecksum).OfType<bool>().All(x => !x);
         }
 
