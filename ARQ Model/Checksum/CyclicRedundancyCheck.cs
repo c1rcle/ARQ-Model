@@ -31,7 +31,6 @@ namespace ARQ_Model.Checksum
             packet.CopyTo(rawBytes, 0);
             
             var packetHash = crcGenerator.ComputeHash(rawBytes).AsBitArray();
-            
             var newPacket = new BitArray(packet.Length + packetHash.Length);
             for (var i = 0; i < packet.Length; i++) newPacket[i] = packet[i];
             for (var i = 0; i < packetHash.Length; i++) newPacket[packet.Length + i] = packetHash[i];
