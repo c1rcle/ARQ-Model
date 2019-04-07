@@ -21,6 +21,13 @@ namespace ARQ_Model
                 Filename = "result.txt"
             };
             protocol.StartSimulation();
+
+            var protocolSNW = new StopNWaitProtocol(57, 1, new BitParity())
+            {
+                FlipProbability = 0.01d, PacketLossProbability = 0.05d, AckLossProbability = 0.05d, 
+                Filename = "resultSNW.txt"
+            };
+            protocolSNW.StartSimulation();
         }
     }
 }
