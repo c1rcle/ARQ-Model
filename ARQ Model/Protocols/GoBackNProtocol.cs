@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using ARQ_Model.Checksum;
 using ARQ_Model.Utility;
 
@@ -125,7 +124,7 @@ namespace ARQ_Model.Protocols
                 CorruptedCount++;
                 return null;
             }
-            if (packet.PacketData.Xor(packet.PacketUnmodifiedData).OfType<bool>().Any(x => x)) MisjudgementCount++;
+            if (!packet.PacketData.EqualsValue(packet.PacketUnmodifiedData)) MisjudgementCount++;
             packetsAcquired.Add(packet.Index);
             return NoiseGenerator.GetRandomWithProbability(AckLossProbability) ? new bool?() : true;
         }

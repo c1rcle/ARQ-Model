@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Linq;
+using ARQ_Model.Utility;
 
 namespace ARQ_Model.Checksum
 {
@@ -45,7 +46,7 @@ namespace ARQ_Model.Checksum
             
             var packetChecksum = new BitArray(bitCount);
             for (var i = 0; i < bitCount; i++) packetChecksum[i] = packet[(packet.Length - bitCount) + i];
-            return checksum.Xor(packetChecksum).OfType<bool>().All(x => !x);
+            return checksum.EqualsValue(packetChecksum);
         }
 
         public override string ToString()

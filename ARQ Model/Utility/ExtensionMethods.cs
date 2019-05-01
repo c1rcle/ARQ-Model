@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Linq;
 using System.Text;
 
 namespace ARQ_Model.Utility
@@ -18,6 +19,12 @@ namespace ARQ_Model.Utility
             var builder = new StringBuilder();
             foreach (bool bit in packet) builder.Append(bit ? "1" : "0");
             return builder.ToString();
+        }
+
+        public static bool EqualsValue(this BitArray packet, BitArray compare)
+        {
+            var temp = new BitArray(packet);
+            return temp.Xor(compare).OfType<bool>().All(x => !x);
         }
     }
 }

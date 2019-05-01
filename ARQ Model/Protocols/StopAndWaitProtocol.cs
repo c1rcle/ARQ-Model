@@ -108,7 +108,7 @@ namespace ARQ_Model.Protocols
                 CorruptedCount++;
                 return null;
             }
-            if (packet.PacketData.Xor(packet.PacketUnmodifiedData).OfType<bool>().Any(x => x)) MisjudgementCount++;
+            if (!packet.PacketData.EqualsValue(packet.PacketUnmodifiedData)) MisjudgementCount++;
             packetsAcquired.Add(packet.Index);
             return NoiseGenerator.GetRandomWithProbability(AckLossProbability) ? new bool?() : true;
         }

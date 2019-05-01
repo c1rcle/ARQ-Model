@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Data.HashFunction.CRC;
 using System.Linq;
+using ARQ_Model.Utility;
 
 namespace ARQ_Model.Checksum
 {
@@ -50,7 +51,7 @@ namespace ARQ_Model.Checksum
             var packetChecksum = new BitArray(crcGenerator.HashSizeInBits);
             var bitOffset = packet.Length - crcGenerator.HashSizeInBits;
             for (var i = bitOffset; i < packet.Length; i++) packetChecksum[i - bitOffset] = packet[i];
-            return crcGenerator.ComputeHash(rawBytes).AsBitArray().Xor(packetChecksum).OfType<bool>().All(x => !x);
+            return crcGenerator.ComputeHash(rawBytes).AsBitArray().EqualsValue(packetChecksum);
         }
 
         public override string ToString()
