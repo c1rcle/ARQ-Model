@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using ARQ_Model.Checksum;
 using ARQ_Model.Utility;
 
@@ -67,8 +68,16 @@ namespace ARQ_Model.Protocols
                                      $"packet count: {TransferData.Length}");
                 //Clear the packets acquired list and flags.
                 packetsAcquired.Clear();
+                requestNumber = 0;
                 currentAcknowledgement = false;
                 transmissionFinished = false;
+                
+                //Clear statistics saved from previous simulation.
+                CorruptedCount = 0;
+                MisjudgementCount = 0;
+                LostPacketCount = 0;
+                LostAcknowledgementCount = 0;
+                
                 //We can set probability after creating an object by using its property.
                 NoiseGenerator.FlipProbability = FlipProbability;
                 while (true)
@@ -84,13 +93,13 @@ namespace ARQ_Model.Protocols
         protected override Packet SendPacket()
         {
             //Generate a packet, append a checksum and pass it through a noise simulator.
-            var transferPacket = ChecksumGenerator.CalculateChecksum(TransferData[requestNumber]);
-            FileWriter.WriteLine($"Packet #{requestNumber} sent: {transferPacket.ToDigitString()}");
-            transferPacket = NoiseGenerator.GenerateNoise(transferPacket);
+            var unmodifiedPacket = ChecksumGenerator.CalculateChecksum(TransferData[requestNumber]);
+            FileWriter.WriteLine($"Packet #{requestNumber} sent: {unmodifiedPacket.ToDigitString()}");
+            var transferPacket = NoiseGenerator.GenerateNoise(unmodifiedPacket);
             //Packet can be lost (it will be null then).
             return new Packet(NoiseGenerator.GetRandomWithProbability(PacketLossProbability)
                 ? null
-                : transferPacket, requestNumber);
+                : transferPacket, unmodifiedPacket, requestNumber);
         }
 
         /// <inheritdoc />
@@ -102,6 +111,7 @@ namespace ARQ_Model.Protocols
             if (packet.PacketData == null)
             {
                 FileWriter.WriteLine($"Packet #{packet.Index} was lost.");
+                LostPacketCount++;
                 return null;
             }
 
@@ -110,7 +120,12 @@ namespace ARQ_Model.Protocols
             var conclusion = check ? "correct" : "incorrect";
             FileWriter.WriteLine($"Packet #{packet.Index} received as {conclusion}:" +
                                  $" {packet.PacketData.ToDigitString()}");
-            if (!check) return null;
+            if (!check)
+            {
+                CorruptedCount++;
+                return null;
+            }
+            if (packet.PacketData.Xor(packet.PacketUnmodifiedData).OfType<bool>().Any(x => x)) MisjudgementCount++;
             packetsAcquired.Add(packet.Index);
             return NoiseGenerator.GetRandomWithProbability(AckLossProbability) ? new bool?() : true;
         }
@@ -153,6 +168,7 @@ namespace ARQ_Model.Protocols
         private void NullAckAcquired()
         {
             FileWriter.WriteLine("ACK timeout. Resending packets.");
+            LostAcknowledgementCount++;
             currentWindow.Clear();
             //Send as much packets as possible in a window.
             requestNumber -= windowSize;

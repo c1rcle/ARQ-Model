@@ -11,10 +11,12 @@ namespace ARQ_Model.Utility
         /// Packet class constructor.
         /// </summary>
         /// <param name="packetData">Raw data packet.</param>
+        /// <param name="packetUnmodifiedData">Data packet that was not passed through noise generator.</param>
         /// <param name="index">Packet index.</param>
-        public Packet(BitArray packetData, int index)
+        public Packet(BitArray packetData, BitArray packetUnmodifiedData, int index)
         {
             PacketData = packetData;
+            PacketUnmodifiedData = packetUnmodifiedData;
             Index = index;
         }
 
@@ -22,6 +24,8 @@ namespace ARQ_Model.Utility
         /// Holds raw packet data.
         /// </summary>
         public BitArray PacketData { get; }
+        
+        public BitArray PacketUnmodifiedData { get; }
 
         /// <summary>
         /// Packet index.

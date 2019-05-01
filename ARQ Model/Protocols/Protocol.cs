@@ -51,6 +51,26 @@ namespace ARQ_Model.Protocols
             ChecksumGenerator = checksumGenerator;
             TransferData = packetList.ToArray();
         }
+        
+        /// <summary>
+        /// Number of packets that were correctly assumed as corrupted.
+        /// </summary>
+        public int CorruptedCount { get; protected set; }
+
+        /// <summary>
+        /// Number of packets that were incorrectly treated as not corrupted by the checksum algorithm.
+        /// </summary>
+        public int MisjudgementCount { get; protected set; }
+
+        /// <summary>
+        /// Number of packets that were lost during transmission.
+        /// </summary>
+        public int LostPacketCount { get; protected set; }
+
+        /// <summary>
+        /// Number of acknowledgements that were lost during transmission.
+        /// </summary>
+        public int LostAcknowledgementCount { get; protected set; }
 
         /// <summary>
         /// Probability of bit flip during transmission.

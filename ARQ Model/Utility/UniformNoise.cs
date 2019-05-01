@@ -52,10 +52,11 @@ namespace ARQ_Model.Utility
         /// <returns>Packet after simulation.</returns>
         public BitArray GenerateNoise(BitArray packet)
         {
-            for (var i = 0; i < packet.Length; i++)
+            var temp = new BitArray(packet);
+            for (var i = 0; i < temp.Length; i++)
                 if (GetRandomWithProbability())
-                    packet[i] = !packet[i];
-            return packet;
+                    temp[i] = !temp[i];
+            return temp;
         }
 
         /// <summary>
