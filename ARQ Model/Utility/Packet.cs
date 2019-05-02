@@ -25,6 +25,9 @@ namespace ARQ_Model.Utility
         /// </summary>
         public BitArray PacketData { get; }
         
+        /// <summary>
+        /// Holds unmodified packet data.
+        /// </summary>
         public BitArray PacketUnmodifiedData { get; }
 
         /// <summary>

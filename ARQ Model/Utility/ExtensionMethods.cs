@@ -21,6 +21,12 @@ namespace ARQ_Model.Utility
             return builder.ToString();
         }
 
+        /// <summary>
+        /// Extension function for BitArray class. Allows for value comparision between objects.
+        /// </summary>
+        /// <param name="packet"></param>
+        /// <param name="compare"></param>
+        /// <returns></returns>
         public static bool EqualsValue(this BitArray packet, BitArray compare)
         {
             var temp = new BitArray(packet);

@@ -36,6 +36,12 @@ namespace ARQ_Model
             StartSimulationForN(protocolStop, 1000, "stopCRC.txt");
         }
 
+        /// <summary>
+        /// Reruns the simulation 'count' times and writes data to a file.
+        /// </summary>
+        /// <param name="protocol">Protocol that is going to be used.</param>
+        /// <param name="count">How many times the simulation is going to be run.</param>
+        /// <param name="filename">Output filename.</param>
         private static void StartSimulationForN(Protocol protocol, int count, string filename)
         {
             if (filename == null) return;
