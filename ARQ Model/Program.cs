@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Data.HashFunction.CRC;
+using System.IO;
 using ARQ_Model.Checksum;
 using ARQ_Model.Protocols;
 
@@ -19,29 +20,33 @@ namespace ARQ_Model
             //Make a new object of class GoBackNProtocol and initialize its properties.
             var protocol = new GoBackNProtocol(1000, 1, new BitParity(), 8)
             {
-                FlipProbability = 0.005d, PacketLossProbability = 0.005d, AckLossProbability = 0.005d, 
-                Filename = "result.txt"
+                FlipProbability = 0.005d, PacketLossProbability = 0.005d, AckLossProbability = 0.005d,
             };
             
-            StartSimulationForN(protocol, 50);
-            Console.WriteLine();
+            StartSimulationForN(protocol, 1000, "backNPar.txt");
+
+            protocol.Filename = "testLog.txt";
+            protocol.StartSimulation();
 
             var protocolStop = new StopAndWaitProtocol(1000, 1, new CyclicRedundancyCheck(CRCConfig.CRC8))
             {
-                FlipProbability = 0.003d, PacketLossProbability = 0.005d, AckLossProbability = 0.005d, 
-                Filename = "resultSNW.txt"
+                FlipProbability = 0.003d, PacketLossProbability = 0.005d, AckLossProbability = 0.005d,
             };
             
-            StartSimulationForN(protocolStop, 50);
+            StartSimulationForN(protocolStop, 1000, "stopCRC.txt");
         }
 
-        private static void StartSimulationForN(Protocol protocol, int count)
+        private static void StartSimulationForN(Protocol protocol, int count, string filename)
         {
-            for (var i = 0; i < count; i++)
+            if (filename == null) return;
+            using (var writer = new StreamWriter(filename))
             {
-                protocol.StartSimulation();
-                Console.WriteLine($"{protocol.CorruptedCount}, {protocol.MisjudgementCount}, " + 
-                                  $"{protocol.LostPacketCount}, {protocol.LostAcknowledgementCount}");
+                for (var i = 0; i < count; i++)
+                {
+                    protocol.StartSimulation();
+                    writer.WriteLine($"{protocol.CorruptedCount}, {protocol.MisjudgementCount}, " +
+                                      $"{protocol.LostPacketCount}, {protocol.LostAcknowledgementCount}");
+                }
             }
         }
     }

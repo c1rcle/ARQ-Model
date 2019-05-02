@@ -61,39 +61,25 @@ namespace ARQ_Model.Protocols
         /// <inheritdoc />
         public override void StartSimulation()
         {
-            using (FileWriter = new StreamWriter(Filename))
+            if (Filename != null)
             {
-                FileWriter.WriteLine($"Using {ChecksumGenerator}, window size: {windowSize}, " +
-                                     $"packet count: {TransferData.Length}");
-                //Clear the packets acquired list and flags.
-                packetsAcquired.Clear();
-                requestNumber = 0;
-                currentAcknowledgement = false;
-                transmissionFinished = false;
-                
-                //Clear statistics saved from previous simulation.
-                CorruptedCount = 0;
-                MisjudgementCount = 0;
-                LostPacketCount = 0;
-                LostAcknowledgementCount = 0;
-                
-                //We can set probability after creating an object by using its property.
-                NoiseGenerator.FlipProbability = FlipProbability;
-                while (true)
+                using (FileWriter = new StreamWriter(Filename))
                 {
-                    SenderTask();
-                    if (transmissionFinished) break;
-                    ReceiverTask();
+                    SimulationTask();
                 }
             }
+            else SimulationTask();
         }
+        
+        
 
         /// <inheritdoc />
         protected override Packet SendPacket()
         {
             //Generate a packet, append a checksum and pass it through a noise simulator.
             var unmodifiedPacket = ChecksumGenerator.CalculateChecksum(TransferData[requestNumber]);
-            FileWriter.WriteLine($"Packet #{requestNumber} sent: {unmodifiedPacket.ToDigitString()}");
+            if (Filename != null) 
+                FileWriter.WriteLine($"Packet #{requestNumber} sent: {unmodifiedPacket.ToDigitString()}");
             var transferPacket = NoiseGenerator.GenerateNoise(unmodifiedPacket);
             //Packet can be lost (it will be null then).
             return new Packet(NoiseGenerator.GetRandomWithProbability(PacketLossProbability)
@@ -109,16 +95,18 @@ namespace ARQ_Model.Protocols
             //If packet was corrupted we return null (it simulates a timeout).
             if (packet.PacketData == null)
             {
-                FileWriter.WriteLine($"Packet #{packet.Index} was lost.");
+                if (Filename != null) FileWriter.WriteLine($"Packet #{packet.Index} was lost.");
                 LostPacketCount++;
                 return null;
             }
 
             //Check if packet is not corrupted and send an acknowledgement (it can be lost too).
             var check = ChecksumGenerator.CheckChecksum(packet.PacketData);
-            var conclusion = check ? "correct" : "incorrect";
-            FileWriter.WriteLine($"Packet #{packet.Index} received as {conclusion}:" +
-                                 $" {packet.PacketData.ToDigitString()}");
+            if (Filename != null)
+            {
+                var conclusion = check ? "correct" : "incorrect";
+                FileWriter.WriteLine($"Packet #{packet.Index} received as {conclusion}:" + 
+                                     $" {packet.PacketData.ToDigitString()}");}
             if (!check)
             {
                 CorruptedCount++;
@@ -127,6 +115,35 @@ namespace ARQ_Model.Protocols
             if (!packet.PacketData.EqualsValue(packet.PacketUnmodifiedData)) MisjudgementCount++;
             packetsAcquired.Add(packet.Index);
             return NoiseGenerator.GetRandomWithProbability(AckLossProbability) ? new bool?() : true;
+        }
+
+        /// <summary>
+        /// Task that configures and starts the simulation.
+        /// </summary>
+        private void SimulationTask()
+        {
+            if (Filename != null) FileWriter.WriteLine($"Using {ChecksumGenerator}, window size: {windowSize}, " + 
+                                                       $"packet count: {TransferData.Length}");
+            //Clear the packets acquired list and flags.
+            packetsAcquired.Clear();
+            requestNumber = 0;
+            currentAcknowledgement = false;
+            transmissionFinished = false;
+                
+            //Clear statistics saved from previous simulation.
+            CorruptedCount = 0;
+            MisjudgementCount = 0;
+            LostPacketCount = 0;
+            LostAcknowledgementCount = 0;
+                
+            //We can set probability after creating an object by using its property.
+            NoiseGenerator.FlipProbability = FlipProbability;
+            while (true)
+            {
+                SenderTask();
+                if (transmissionFinished) break;
+                ReceiverTask();
+            }
         }
 
         /// <summary>
@@ -153,7 +170,8 @@ namespace ARQ_Model.Protocols
         /// </summary>
         private void SendFirstWindow()
         {
-            FileWriter.WriteLine($"Transmitting {windowSize} packets, starting from #{requestNumber}.");
+            if (Filename != null) FileWriter.WriteLine($"Transmitting {windowSize} packets," +
+                                                       $" starting from #{requestNumber}.");
             for (var i = 0; i < windowSize; i++)
             {
                 currentWindow.Enqueue(SendPacket());
@@ -166,7 +184,7 @@ namespace ARQ_Model.Protocols
         /// </summary>
         private void NullAckAcquired()
         {
-            FileWriter.WriteLine("ACK timeout. Resending packets.");
+            if (Filename != null) FileWriter.WriteLine("ACK timeout. Resending packets.");
             LostAcknowledgementCount++;
             currentWindow.Clear();
             //Send as much packets as possible in a window.
@@ -187,7 +205,7 @@ namespace ARQ_Model.Protocols
         /// </summary>
         private void CorrectAckAcquired()
         {
-            FileWriter.WriteLine($"ACK acquired for #{requestNumber - windowSize}");
+            if (Filename != null) FileWriter.WriteLine($"ACK acquired for #{requestNumber - windowSize}");
             if (requestNumber >= TransferData.Length)
             {
                 if (requestNumber - windowSize == TransferData.Length - 1) transmissionFinished = true;

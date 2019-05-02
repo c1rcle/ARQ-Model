@@ -29,7 +29,7 @@ namespace ARQ_Model.Protocols
             FlipProbability = 0.01d;
             PacketLossProbability = 0.005d;
             AckLossProbability = 0.005d;
-            Filename = "result.txt";
+            Filename = null;
 
             //Generate 'byteCount' random bytes for transfer.
             var numberGenerator = new Random();
@@ -51,7 +51,7 @@ namespace ARQ_Model.Protocols
             ChecksumGenerator = checksumGenerator;
             TransferData = packetList.ToArray();
         }
-        
+
         /// <summary>
         /// Number of packets that were correctly assumed as corrupted.
         /// </summary>
@@ -88,7 +88,7 @@ namespace ARQ_Model.Protocols
         public double AckLossProbability { protected get; set; }
         
         /// <summary>
-        /// Result file filename.
+        /// Result file filename. If filename is not set logging is disabled.
         /// </summary>
         public string Filename { protected get; set; }
 
